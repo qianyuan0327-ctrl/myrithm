@@ -7,7 +7,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCGdF9m5jAC_PV7ainjGr2vsRvxRSuHRgE",
@@ -28,7 +28,7 @@
       document.getElementById('in').value = "";
     };
 
-    const q = query(colRef, orderBy("time", "desc"), limit(5));
+    const q = query(colRef, orderBy("time", "desc"));
     onSnapshot(q, (snap) => {
       document.getElementById('list').innerHTML = snap.docs
         .map(doc => {
