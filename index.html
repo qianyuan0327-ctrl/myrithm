@@ -35,7 +35,7 @@
           const d = doc.data();
           // Convert Firebase timestamp to a readable local date/time string
           const dateStr = d.time ? d.time.toDate().toLocaleString() : "Saving...";
-          return `<li>[${dateStr}] ${d.text}</li>`;
+          return `<li style="margin-bottom: 15px;">[${dateStr}] ${d.text}</li>`;
         }).join("");
     });
   </script>
