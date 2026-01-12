@@ -1,12 +1,83 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Page Title</title>
-  </head>
-  <body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Private Data Logger</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #333; margin-bottom: 1.5rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 1rem; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+        input:focus { border-color: #007bff; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #status { margin-top: 1rem; font-size: 0.9rem; color: #666; }
+    </style>
+</head>
+<body>
 
-    <h1>This is a Heading</h1>
-    <p>This is a paragraph.</p>
+    <div class="card">
+        <h2>Save Entry</h2>
+        <input type="text" id="userInput" placeholder="What's on your mind?">
+        <button id="saveBtn">Push to Storage</button>
+        <div id="status">Ready to log...</div>
+    </div>
 
-  </body>
+    <script type="module">
+        // 1. Import Firebase SDKs from CDN
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // 2. Replace this with YOUR Config from Firebase Console
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGdF9m5jAC_PV7ainjGr2vsRvxRSuHRgE",
+            authDomain: "myrithm-storage.firebaseapp.com",
+            projectId: "myrithm-storage",
+            storageBucket: "myrithm-storage.firebasestorage.app",
+            messagingSenderId: "1069448713700",
+            appId: "1:1069448713700:web:248cd3e46328c2a89823f1",
+            measurementId: "G-37Y5JS94HH"
+        };
+
+        // 3. Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const inputField = document.getElementById('userInput');
+        const saveButton = document.getElementById('saveBtn');
+        const statusDiv = document.getElementById('status');
+
+        // 4. Handle the Save Logic
+        saveButton.addEventListener('click', async () => {
+            const text = inputField.value.trim();
+            
+            if (!text) {
+                statusDiv.innerText = "❌ Please enter some text!";
+                return;
+            }
+
+            // Disable button while saving
+            saveButton.disabled = true;
+            statusDiv.innerText = "Saving to cloud...";
+
+            try {
+                // This adds a new document to a collection called "entries"
+                await addDoc(collection(db, "entries"), {
+                    content: text,
+                    timestamp: serverTimestamp()
+                });
+
+                statusDiv.innerText = "✅ Successfully saved!";
+                inputField.value = ""; // Clear input
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                statusDiv.innerText = "⚠️ Error. Check Console.";
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+    </script>
+</body>
 </html>
