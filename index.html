@@ -53,10 +53,10 @@
       const d = doc.data();
       const dateStr = d.time ? d.time.toDate().toLocaleString() : "Saving...";
       return `<li style="margin-bottom: 15px;">[${dateStr}] ${d.text}</li>`;
-    }).join("");
+      }).join("");
     const list = document.getElementById('list');
     list.scrollTop = list.scrollHeight;
-});
+    });
   </script>
 </body>
 </html>
