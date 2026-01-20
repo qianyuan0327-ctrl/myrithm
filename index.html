@@ -1,11 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Life Logs</title> 
+  <title>Mainspace</title> 
+  <style>
+  #list {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd; 
+    padding: 10px;
+    list-style: none;
+  }
+  </style>
 </head>
 
 <body>
-  <h1>Comment Board</h1>
+  <div style="font-family: sans-serif; margin-bottom: 10px;">
+  Total Notes: <span id="counter">0</span>
+  </div>
+  <h1>Comment board</h1>
   <a href="explain.html" style="color: #007bff; text-decoration: none;">[Why you're here]</a>
   <input id="in" placeholder="New note...">
   <button id="btn">Save</button>
@@ -36,14 +48,15 @@
 
     const q = query(colRef, orderBy("time", "desc"));
     onSnapshot(q, (snap) => {
-      document.getElementById('list').innerHTML = snap.docs
-        .map(doc => {
-          const d = doc.data();
-          // Convert Firebase timestamp to a readable local date/time string
-          const dateStr = d.time ? d.time.toDate().toLocaleString() : "Saving...";
-          return `<li style="margin-bottom: 15px;">[${dateStr}] ${d.text}</li>`;
-        }).join("");
-    });
+      document.getElementById('counter').innerText = snap.size;
+      document.getElementById('list').innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      const dateStr = d.time ? d.time.toDate().toLocaleString() : "Saving...";
+      return `<li style="margin-bottom: 15px;">[${dateStr}] ${d.text}</li>`;
+    }).join("");
+    const list = document.getElementById('list');
+    list.scrollTop = list.scrollHeight;
+});
   </script>
 </body>
 </html>
