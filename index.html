@@ -46,7 +46,7 @@
       document.getElementById('in').value = "";
     };
 
-    const q = query(colRef, orderBy("time", "desc"));
+    const q = query(colRef, orderBy("time", "asc"));
     onSnapshot(q, (snap) => {
       document.getElementById('counter').innerText = snap.size;
       document.getElementById('list').innerHTML = snap.docs.map(doc => {
