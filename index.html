@@ -171,7 +171,7 @@
 
         if (activeGame.gold >= cost) {
             activeGame.gold -= cost;
-            activeGame.multi += 0.01;
+            activeGame.multi += 0.05;
             updateDisplay();
             await autoSave();
         } else {
