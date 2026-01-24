@@ -34,7 +34,7 @@
             Rolls: <span id="pRolls"></span>
         </div>
         <div id="rollResult" class="gem-display">Roll to find a gem!</div>
-        <button id="rollBtn" style="padding: 10px 25px; cursor:pointer;">ROLL (Save every 3)</button>
+        <button id="rollBtn" style="padding: 10px 25px; cursor:pointer;">ROLL (Save every 10)</button>
         <p id="saveStatus" style="font-size: 10px; color: green;"></p>
     </div>
   </div>
@@ -132,12 +132,12 @@
         if (!activeGame) return;
 
         const result = activeGame.roll();
-        document.getElementById('rollResult').innerHTML = `💎 Found: ${result.gem} <br> <small>(1 in 2^${result.index + 1})</small>`;
+        document.getElementById('rollResult').innerHTML = `💎 Found: ${result.gem} <br> <small>(1 in ${Math.pow(2,result.index + 1)})</small>`;
         
         updateDisplay();
       
-        if (activeGame.rollcnt % 3 === 0) {
-            document.getElementById('saveStatus').innerText = "Autosaving...";
+        if (activeGame.rollcnt % 10 === 0) {
+            document.getElementById('saveStatus').innerText = "Saving...";
             await setDoc(doc(db, "players", activeGame.name), {
                 multi: activeGame.multi,
                 gold: activeGame.gold,
