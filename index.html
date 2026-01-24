@@ -152,7 +152,7 @@
         let shuffle = setInterval(() => {
             const randomName = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
             resDiv.innerHTML = `<span style="color:#aaa">${randomName}...</span>`;
-        }, 250);
+        }, 100);
 
         setTimeout(async () => {
             clearInterval(shuffle);
@@ -161,12 +161,12 @@
             updateDisplay();
             btn.disabled = false;
             if (activeGame.rollcnt % 3 === 0) await autoSave();
-        }, 1500);
+        }, 700);
     };
 
     document.getElementById('upgradeBtn').onclick = async () => {
         if (!activeGame) return;
-        let n = Math.round((activeGame.multi - 1.0) / 0.01);
+        let n = Math.round((activeGame.multi - 1.0) / MULTI_STEP);
         let cost = 5 * Math.pow(2, n);
 
         if (activeGame.gold >= cost) {
