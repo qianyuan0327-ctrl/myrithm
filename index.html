@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mainspace</title> 
+  <title>Index.html</title> 
   <style>
-  #list {
-    height: 300px;
-    overflow-y: auto;
-    border: 1px solid #ddd; 
-    padding: 10px;
-    list-style: none;
-  }
+    body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
+    #list { height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; list-style: none; background: white; }
+    .game-box { margin-top: 30px; padding: 20px; border: 2px solid #333; border-radius: 10px; background: #fff; }
+    .gem-display { font-size: 1.5rem; font-weight: bold; color: #2c3e50; margin: 15px 0; }
+    .stats { color: #666; font-family: monospace; }
   </style>
 </head>
 
@@ -22,10 +20,27 @@
   <input id="in" placeholder="New note...">
   <button id="btn">Save</button>
   <ul id="list" style="font-family: monospace;"></ul>
+  <div class="game-box">
+    <h2>Gem Roller</h2>
+    <div id="login-ui">
+        <input id="userCodeInput" placeholder="Enter Username">
+        <button id="loadGameBtn">Load Progress</button>
+    </div>
 
+    <div id="game-ui" style="display:none;">
+        <div class="stats">
+            Player: <span id="pName"></span> | 
+            Multi: <span id="pMulti"></span> | 
+            Rolls: <span id="pRolls"></span>
+        </div>
+        <div id="rollResult" class="gem-display">Roll to find a gem!</div>
+        <button id="rollBtn" style="padding: 10px 25px; cursor:pointer;">ROLL (Save every 3)</button>
+        <p id="saveStatus" style="font-size: 10px; color: green;"></p>
+    </div>
+  </div>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCGdF9m5jAC_PV7ainjGr2vsRvxRSuHRgE",
@@ -57,6 +72,86 @@
     const list = document.getElementById('list');
     list.scrollTop = list.scrollHeight;
     });
+
+    class GameSession {
+        static JEWELLERY = ["Jasper", "Agate", "Tiger's Eye", "Onyx", 
+                            "Turquoise", "Lapis Lazuli", "Citrine", "Garnet", 
+                            "Peridot", "Amethyst", "Topaz", "Aquamarine", 
+                            "Tourmaline", "Opal", "Zircon", "Spinel", 
+                            "Emerald", "Sapphire", "Ruby", "Diamond"];
+
+        constructor(name, multi, gold, rollcnt) {
+            this.name = name;
+            this.multi = parseFloat(multi);
+            this.gold = parseInt(gold);
+            this.rollcnt = parseInt(rollcnt);
+        }
+
+        getWeights() {
+            return GameSession.JEWELLERY.map((_, i) => Math.pow(2, -(i + 1) / this.multi));
+        }
+
+        roll() {
+            this.rollcnt++;
+            const weights = this.getWeights();
+            const total = weights.reduce((a, b) => a + b, 0);
+            let r = Math.random() * total;
+            let cumulative = 0;
+
+            for (let i = 0; i < weights.length; i++) {
+                cumulative += weights[i];
+                if (r <= cumulative) {
+                    return { gem: GameSession.JEWELLERY[i], index: i };
+                }
+            }
+        }
+    }
+
+    let activeGame = null;
+    document.getElementById('loadGameBtn').onclick = async () => {
+        const name = document.getElementById('userCodeInput').value;
+        if (!name) return;
+
+        const docRef = doc(db, "players", name);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const d = docSnap.data();
+            activeGame = new GameSession(name, d.multi, d.gold, d.rollcnt);
+        } else {
+            // Default start if no user found
+            activeGame = new GameSession(name, 1.0, 0, 0);
+        }
+
+        document.getElementById('login-ui').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'block';
+        updateDisplay();
+    };
+
+    document.getElementById('rollBtn').onclick = async () => {
+        if (!activeGame) return;
+
+        const result = activeGame.roll();
+        document.getElementById('rollResult').innerHTML = `💎 Found: ${result.gem} <br> <small>(1 in 2^${result.index + 1})</small>`;
+        
+        updateDisplay();
+      
+        if (activeGame.rollcnt % 3 === 0) {
+            document.getElementById('saveStatus').innerText = "Autosaving...";
+            await setDoc(doc(db, "players", activeGame.name), {
+                multi: activeGame.multi,
+                gold: activeGame.gold,
+                rollcnt: activeGame.rollcnt
+            });
+            setTimeout(() => { document.getElementById('saveStatus').innerText = "Saved!"; }, 1000);
+        }
+    };
+
+    function updateDisplay() {
+        document.getElementById('pName').innerText = activeGame.name;
+        document.getElementById('pMulti').innerText = activeGame.multi;
+        document.getElementById('pRolls').innerText = activeGame.rollcnt;
+    }
   </script>
 </body>
 </html>
