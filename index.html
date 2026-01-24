@@ -155,30 +155,31 @@
         results.push(activeGame.roll());
     }
 
-    // Clear display
+    // Clear display and create lines
     resDiv.innerHTML = "";
-
-    // Phase 1: start 5 independent shuffles
-    const intervals = [];
+    const lineDivs = [];
     for (let i = 0; i < ROLL_COUNT; i++) {
-        const lineIndex = i;
-        resDiv.innerHTML += `<div id="line${lineIndex}"></div>`;
-        const lineDiv = document.getElementById(`line${lineIndex}`);
-
-        intervals[i] = setInterval(() => {
-            const randomGem = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
-            lineDiv.innerHTML = `💎 <span style="color:#aaa">${randomGem}...</span>`;
-        }, SHUFFLE_INTERVAL);
+        const div = document.createElement("div");
+        div.id = `line${i}`;
+        resDiv.appendChild(div);
+        lineDivs.push(div);
     }
 
-    // Phase 2: stop each line and show final gem one by one
+    // Start simultaneous shuffling for each line
+    const intervals = lineDivs.map((lineDiv) =>
+        setInterval(() => {
+            const randomGem = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
+            lineDiv.innerHTML = `💎 <span style="color:#aaa">${randomGem}...</span>`;
+        }, SHUFFLE_INTERVAL)
+    );
+
+    // Sequential reveal of final results
     results.forEach((r, i) => {
         setTimeout(() => {
             clearInterval(intervals[i]);
-            const lineDiv = document.getElementById(`line${i}`);
+            const lineDiv = lineDivs[i];
             lineDiv.innerHTML = `💎 <strong>${r.gem}</strong> <small style="color:#28a745;">+${r.gain.toLocaleString()} Gold (1 in ${r.rarity.toLocaleString()})</small>`;
             
-            // Re-enable button and update display after last roll
             if (i === results.length - 1) {
                 btn.disabled = false;
                 updateDisplay();
@@ -187,6 +188,7 @@
         }, (i + 1) * (SHUFFLE_DURATION / ROLL_COUNT));
     });
 };
+
 
 
     document.getElementById('upgradeBtn').onclick = async () => {
