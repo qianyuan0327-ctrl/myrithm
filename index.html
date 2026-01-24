@@ -172,7 +172,7 @@
 
         if (activeGame.gold >= cost) {
             activeGame.gold -= cost;
-            activeGame.multi += MULTI_STEP;
+            activeGame.multi = Math.round((activeGame.multi + MULTI_STEP) * 100) / 100;
             updateDisplay();
             await autoSave();
         } else {
