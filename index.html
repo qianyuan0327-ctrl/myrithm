@@ -142,34 +142,52 @@
     };
 
     document.getElementById('rollBtn').onclick = async () => {
-        if (!activeGame || document.getElementById('rollBtn').disabled) return;
+    if (!activeGame || document.getElementById('rollBtn').disabled) return;
 
-        const btn = document.getElementById('rollBtn');
-        const resDiv = document.getElementById('rollResult');
-        
-        // Disable interactions
-        btn.disabled = true;
-        const results = [];
-        for (let i = 0; i < ROLL_COUNT; i++) {
-            results.push(activeGame.roll());
-        }
+    const btn = document.getElementById('rollBtn');
+    const resDiv = document.getElementById('rollResult');
 
-        // Start 1.5s shuffle (every 0.25s)
-        let shuffle = setInterval(() => {
-        const randomName = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
-            resDiv.innerHTML = `<span style="color:#aaa">${randomName}...</span>`;
+    btn.disabled = true;
+
+    // Roll results
+    const results = [];
+    for (let i = 0; i < ROLL_COUNT; i++) {
+        results.push(activeGame.roll());
+    }
+
+    // Clear display
+    resDiv.innerHTML = "";
+
+    // Phase 1: start 5 independent shuffles
+    const intervals = [];
+    for (let i = 0; i < ROLL_COUNT; i++) {
+        const lineIndex = i;
+        resDiv.innerHTML += `<div id="line${lineIndex}"></div>`;
+        const lineDiv = document.getElementById(`line${lineIndex}`);
+
+        intervals[i] = setInterval(() => {
+            const randomGem = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
+            lineDiv.innerHTML = `💎 <span style="color:#aaa">${randomGem}...</span>`;
         }, SHUFFLE_INTERVAL);
+    }
 
-        setTimeout(async () => {
-            clearInterval(shuffle);
-            resDiv.innerHTML = results.map(r => `💎 <strong>${r.gem}</strong> <small style="color:#28a745;">+${r.gain.toLocaleString()} Gold (1 in ${r.rarity.toLocaleString()})</small>`).join('<br>');
-
+    // Phase 2: stop each line and show final gem one by one
+    results.forEach((r, i) => {
+        setTimeout(() => {
+            clearInterval(intervals[i]);
+            const lineDiv = document.getElementById(`line${i}`);
+            lineDiv.innerHTML = `💎 <strong>${r.gem}</strong> <small style="color:#28a745;">+${r.gain.toLocaleString()} Gold (1 in ${r.rarity.toLocaleString()})</small>`;
             
-            updateDisplay();
-            btn.disabled = false;
-            if (activeGame.rollcnt % 3 === 0) await autoSave();
-        }, SHUFFLE_DURATION);
-    };
+            // Re-enable button and update display after last roll
+            if (i === results.length - 1) {
+                btn.disabled = false;
+                updateDisplay();
+                if (activeGame.rollcnt % 3 === 0) autoSave();
+            }
+        }, (i + 1) * (SHUFFLE_DURATION / ROLL_COUNT));
+    });
+};
+
 
     document.getElementById('upgradeBtn').onclick = async () => {
         if (!activeGame) return;
