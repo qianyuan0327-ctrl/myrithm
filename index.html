@@ -52,9 +52,10 @@
         measurementId: "G-37Y5JS94HH"
     };
 
-    const db = getFirestore(initializeApp(firebaseConfig));
-    const colRef = collection(db, "entries");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
+    const colRef = collection(db, "entries");
     document.getElementById('btn').onclick = async () => {
       const val = document.getElementById('in').value;
       if (val) await addDoc(colRef, { text: val, time: serverTimestamp() });
@@ -65,35 +66,30 @@
     onSnapshot(q, (snap) => {
       document.getElementById('counter').innerText = snap.size;
       document.getElementById('list').innerHTML = snap.docs.map(doc => {
-      const d = doc.data();
-      const dateStr = d.time ? d.time.toDate().toLocaleString() : "Saving...";
-      return `<li style="margin-bottom: 15px;">[${dateStr}] ${d.text}</li>`;
+        const d = doc.data();
+        const dateStr = d.time ? d.time.toDate().toLocaleString() : "Saving...";
+        return `<li style="margin-bottom: 15px;">[${dateStr}] ${d.text}</li>`;
       }).join("");
-    const list = document.getElementById('list');
-    list.scrollTop = list.scrollHeight;
+      document.getElementById('list').scrollTop = document.getElementById('list').scrollHeight;
     });
 
     class GameSession {
-        static JEWELLERY = ["Jasper", "Agate", "Tiger's Eye", "Onyx", 
-                            "Turquoise", "Lapis Lazuli", "Citrine", "Garnet", 
-                            "Peridot", "Amethyst", "Topaz", "Aquamarine", 
-                            "Tourmaline", "Opal", "Zircon", "Spinel", 
-                            "Emerald", "Sapphire", "Ruby", "Diamond"];
+        static JEWELLERY = ["Jasper", "Agate", "Tiger's Eye", "Onyx", "Turquoise", "Lapis Lazuli", "Citrine", "Garnet", "Peridot", "Amethyst", "Topaz", "Aquamarine", "Tourmaline", "Opal", "Zircon", "Spinel", "Emerald", "Sapphire", "Ruby", "Diamond"];
+        
+        // Balanced prizes to match your 2^n upgrade cost
+        static PRIZES = [1, 3, 8, 15, 30, 60, 120, 250, 500, 1000, 2500, 5000, 12000, 25000, 50000, 120000, 250000, 600000, 1500000, 5000000];
 
-        constructor(name, multi, gold, rollcnt) {
+        constructor(name, multi = 1.0, gold = 0, rollcnt = 0) {
             this.name = name;
             this.multi = parseFloat(multi);
             this.gold = parseInt(gold);
             this.rollcnt = parseInt(rollcnt);
         }
 
-        getWeights() {
-            return GameSession.JEWELLERY.map((_, i) => Math.pow(2, -(i + 1) / this.multi));
-        }
-
         roll() {
             this.rollcnt++;
-            const weights = this.getWeights();
+            // The logic you wrote in Python
+            const weights = GameSession.JEWELLERY.map((_, i) => Math.pow(2, -(i + 1) / this.multi));
             const total = weights.reduce((a, b) => a + b, 0);
             let r = Math.random() * total;
             let cumulative = 0;
@@ -101,16 +97,20 @@
             for (let i = 0; i < weights.length; i++) {
                 cumulative += weights[i];
                 if (r <= cumulative) {
-                    return { gem: GameSession.JEWELLERY[i], index: i };
+                    const goldGained = GameSession.PRIZES[i];
+                    this.gold += goldGained;
+                    return { gem: GameSession.JEWELLERY[i], index: i, gain: goldGained };
                 }
             }
         }
     }
 
     let activeGame = null;
+
+    // --- PART 3: BUTTONS & FIREBASE INTERACTION ---
     document.getElementById('loadGameBtn').onclick = async () => {
         const name = document.getElementById('userCodeInput').value;
-        if (!name) return;
+        if (!name) return alert("Enter a name!");
 
         const docRef = doc(db, "players", name);
         const docSnap = await getDoc(docRef);
@@ -119,8 +119,7 @@
             const d = docSnap.data();
             activeGame = new GameSession(name, d.multi, d.gold, d.rollcnt);
         } else {
-            // Default start if no user found
-            activeGame = new GameSession(name, 1.0, 0, 0);
+            activeGame = new GameSession(name);
         }
 
         document.getElementById('login-ui').style.display = 'none';
@@ -130,27 +129,45 @@
 
     document.getElementById('rollBtn').onclick = async () => {
         if (!activeGame) return;
-
-        const result = activeGame.roll();
-        document.getElementById('rollResult').innerHTML = `💎 Found: ${result.gem} <br> <small>(1 in ${Math.pow(2,result.index + 1)})</small>`;
-        
+        const res = activeGame.roll();
+        document.getElementById('rollResult').innerHTML = `💎 Found: ${res.gem} (+${res.gain} Gold!)`;
         updateDisplay();
-      
-        if (activeGame.rollcnt % 10 === 0) {
-            document.getElementById('saveStatus').innerText = "Saving...";
-            await setDoc(doc(db, "players", activeGame.name), {
-                multi: activeGame.multi,
-                gold: activeGame.gold,
-                rollcnt: activeGame.rollcnt
-            });
-            setTimeout(() => { document.getElementById('saveStatus').innerText = "Saved!"; }, 1000);
+        if (activeGame.rollcnt % 3 === 0) autoSave();
+    };
+
+    document.getElementById('upgradeBtn').onclick = async () => {
+        if (!activeGame) return;
+        let n = Math.round((activeGame.multi - 1.0) / 0.01);
+        let cost = 5 * Math.pow(2, n);
+
+        if (activeGame.gold >= cost) {
+            activeGame.gold -= cost;
+            activeGame.multi += 0.01;
+            updateDisplay();
+            autoSave();
+        } else {
+            alert("Not enough gold!");
         }
     };
 
+    async function autoSave() {
+        document.getElementById('saveStatus').innerText = "Autosaving...";
+        await setDoc(doc(db, "players", activeGame.name), {
+            multi: activeGame.multi,
+            gold: activeGame.gold,
+            rollcnt: activeGame.rollcnt
+        });
+        setTimeout(() => { document.getElementById('saveStatus').innerText = "Cloud Synced ✅"; }, 800);
+    }
+
     function updateDisplay() {
+        let n = Math.round((activeGame.multi - 1.0) / 0.01);
+        let nextCost = 5 * Math.pow(2, n);
         document.getElementById('pName').innerText = activeGame.name;
-        document.getElementById('pMulti').innerText = activeGame.multi;
+        document.getElementById('pMulti').innerText = activeGame.multi.toFixed(2);
+        document.getElementById('pGold').innerText = activeGame.gold.toLocaleString();
         document.getElementById('pRolls').innerText = activeGame.rollcnt;
+        document.getElementById('upgradeCost').innerText = nextCost.toLocaleString();
     }
   </script>
 </body>
