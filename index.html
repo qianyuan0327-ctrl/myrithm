@@ -1,45 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Index.html</title> 
+  <title>Gem Roller Pro</title> 
   <style>
     body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
-    #list { height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; list-style: none; background: white; }
-    .game-box { margin-top: 30px; padding: 20px; border: 2px solid #333; border-radius: 10px; background: #fff; }
-    .gem-display { font-size: 1.5rem; font-weight: bold; color: #2c3e50; margin: 15px 0; }
-    .stats { color: #666; font-family: monospace; }
+    #list { height: 180px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; list-style: none; background: white; margin-bottom: 20px; }
+    .game-box { padding: 20px; border: 2px solid #333; border-radius: 10px; background: #fff; box-shadow: 4px 4px 0px #333; }
+    .gem-display { font-size: 1.5rem; font-weight: bold; color: #2c3e50; margin: 15px 0; min-height: 60px; }
+    .stats { color: #666; font-family: monospace; background: #eee; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
   </style>
 </head>
 
 <body>
-  <div style="font-family: sans-serif; margin-bottom: 10px;">
-  Total Notes: <span id="counter">0</span>
-  </div>
+  <div style="margin-bottom: 10px;">Total Notes: <span id="counter">0</span></div>
   <h1>Comment board</h1>
-  <a href="explain.html" style="color: #007bff; text-decoration: none;">[Why you're here]</a>
   <input id="in" placeholder="New note...">
-  <button id="btn">Save</button>
-  <ul id="list" style="font-family: monospace;"></ul>
-  <div class="game-box">
-    <h2>Gem Roller</h2>
-    <div id="login-ui">
-        <input id="userCodeInput" placeholder="Enter Username">
-        <button id="loadGameBtn">Load Progress</button>
-    </div>
+  <button id="btn">Save Note</button>
+  <ul id="list"></ul>
 
-    <div id="game-ui" style="display:none;">
-        <div class="stats">
-            Player: <span id="pName"></span> | 
-            Multi: <span id="pMulti"></span> | 
-            Rolls: <span id="pRolls"></span>
-        </div>
-        <div id="rollResult" class="gem-display">Roll to find a gem!</div>
-        <button id="rollBtn" style="padding: 10px 25px; cursor:pointer;">ROLL (Save every 10)</button>
-        <p id="saveStatus" style="font-size: 10px; color: green;"></p>
-    </div>
-  </div>
   <div class="game-box">
-    <h2>Gem Roller</h2>
+    <h2>💎 Gem Roller</h2>
     
     <div id="login-ui">
         <input id="userCodeInput" placeholder="Enter Username">
@@ -52,38 +33,41 @@
             Multi: <span id="pMulti"></span> | 
             Rolls: <span id="pRolls">0</span>
         </div>
-        <div class="gem-display">
+        <div class="stats" style="background: #fffbe6;">
             Gold: <span id="pGold">0</span>
         </div>
         
-        <div id="rollResult" style="margin: 15px 0; min-height: 50px;">Roll to find a gem!</div>
+        <div id="rollResult" class="gem-display">Ready to roll?</div>
         
-        <button id="rollBtn" style="padding: 10px 25px; cursor:pointer; background: #28a745; color: white; border: none; border-radius: 5px;">ROLL</button>
+        <button id="rollBtn" style="padding: 12px 25px; cursor:pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold;">ROLL</button>
         
-        <button id="upgradeBtn" style="padding: 10px 25px; cursor:pointer; margin-left: 10px;">
-            Upgrade Multi (Cost: <span id="upgradeCost">5</span>)
+        <button id="upgradeBtn" style="padding: 12px 25px; cursor:pointer; margin-left: 10px; border-radius: 5px;">
+            Upgrade Luck (Cost: <span id="upgradeCost">5</span>)
         </button>
 
-        <p id="saveStatus" style="font-size: 10px; color: green; margin-top: 10px;"></p>
-        </div>
+        <p id="saveStatus" style="font-size: 11px; color: #888; margin-top: 15px; font-style: italic;"></p>
+    </div>
   </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyCGdF9m5jAC_PV7ainjGr2vsRvxRSuHRgE",
-        authDomain: "myrithm-storage.firebaseapp.com",
-        projectId: "myrithm-storage",
-        storageBucket: "myrithm-storage.firebasestorage.app",
-        messagingSenderId: "1069448713700",
-        appId: "1:1069448713700:web:248cd3e46328c2a89823f1",
-        measurementId: "G-37Y5JS94HH"
+        const firebaseConfig = { 
+          apiKey: "AIzaSyCGdF9m5jAC_PV7ainjGr2vsRvxRSuHRgE", 
+          authDomain: "myrithm-storage.firebaseapp.com", 
+          projectId: "myrithm-storage", 
+          storageBucket: "myrithm-storage.firebasestorage.app", 
+          messagingSenderId: "1069448713700", 
+          appId: "1:1069448713700:web:248cd3e46328c2a89823f1", 
+          measurementId: "G-37Y5JS94HH" };
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // --- PART 1: COMMENT BOARD ---
     const colRef = collection(db, "entries");
     document.getElementById('btn').onclick = async () => {
       const val = document.getElementById('in').value;
@@ -91,20 +75,19 @@
       document.getElementById('in').value = "";
     };
 
-    const q = query(colRef, orderBy("time", "asc"));
-    onSnapshot(q, (snap) => {
+    onSnapshot(query(colRef, orderBy("time", "asc")), (snap) => {
       document.getElementById('counter').innerText = snap.size;
       document.getElementById('list').innerHTML = snap.docs.map(doc => {
         const d = doc.data();
-        const dateStr = d.time ? d.time.toDate().toLocaleString() : "Saving...";
-        return `<li style="margin-bottom: 15px;">[${dateStr}] ${d.text}</li>`;
+        const dateStr = d.time ? d.time.toDate().toLocaleString() : "...";
+        return `<li>[${dateStr}] ${d.text}</li>`;
       }).join("");
       document.getElementById('list').scrollTop = document.getElementById('list').scrollHeight;
     });
 
+    // --- PART 2: GAME LOGIC (OOP) ---
     class GameSession {
         static JEWELLERY = ["Jasper", "Agate", "Tiger's Eye", "Onyx", "Turquoise", "Lapis Lazuli", "Citrine", "Garnet", "Peridot", "Amethyst", "Topaz", "Aquamarine", "Tourmaline", "Opal", "Zircon", "Spinel", "Emerald", "Sapphire", "Ruby", "Diamond"];
-        
         static PRIZES = [1, 3, 8, 15, 30, 60, 120, 250, 500, 1000, 2500, 5000, 12000, 25000, 50000, 120000, 250000, 600000, 1500000, 5000000];
 
         constructor(name, multi = 1.0, gold = 0, rollcnt = 0) {
@@ -114,42 +97,36 @@
             this.rollcnt = parseInt(rollcnt);
         }
 
+        getWeights() {
+            return GameSession.JEWELLERY.map((_, i) => Math.pow(2, -(i + 1) / this.multi));
+        }
+
         roll() {
-        this.rollcnt++;
-        const weights = this.getWeights();
-        const total = weights.reduce((a, b) => a + b, 0);
-        let r = Math.random() * total;
-        let cumulative = 0;
+            this.rollcnt++;
+            const weights = this.getWeights();
+            const total = weights.reduce((a, b) => a + b, 0);
+            let r = Math.random() * total;
+            let cumulative = 0;
 
-        for (let i = 0; i < weights.length; i++) {
-            cumulative += weights[i];
-            if (r <= cumulative) {
-                const goldGained = GameSession.PRIZES[i];
-                this.gold += goldGained;
-                
-                // Calculate actual power of 2 (e.g., 32 instead of 2^5)
-                const actualRarity = Math.pow(2, i + 1);
-
-                return { 
-                    gem: GameSession.JEWELLERY[i], 
-                    index: i, 
-                    gain: goldGained,
-                    rarity: actualRarity.toLocaleString()
-                };
+            for (let i = 0; i < weights.length; i++) {
+                cumulative += weights[i];
+                if (r <= cumulative) {
+                    const gain = GameSession.PRIZES[i];
+                    this.gold += gain;
+                    return { gem: GameSession.JEWELLERY[i], gain: gain, rarity: Math.pow(2, i + 1) };
+                }
             }
         }
-    }
     }
 
     let activeGame = null;
 
+    // --- PART 3: UI & ANIMATION ---
     document.getElementById('loadGameBtn').onclick = async () => {
         const name = document.getElementById('userCodeInput').value;
-        if (!name) return alert("Enter a name!");
+        if (!name) return alert("Username required!");
 
-        const docRef = doc(db, "players", name);
-        const docSnap = await getDoc(docRef);
-
+        const docSnap = await getDoc(doc(db, "players", name));
         if (docSnap.exists()) {
             const d = docSnap.data();
             activeGame = new GameSession(name, d.multi, d.gold, d.rollcnt);
@@ -163,11 +140,29 @@
     };
 
     document.getElementById('rollBtn').onclick = async () => {
-        if (!activeGame) return;
+        if (!activeGame || document.getElementById('rollBtn').disabled) return;
+
+        const btn = document.getElementById('rollBtn');
+        const resDiv = document.getElementById('rollResult');
+        
+        // Disable interactions
+        btn.disabled = true;
         const res = activeGame.roll();
-        document.getElementById('rollResult').innerHTML = `💎 Found: ${res.gem} (+${res.gain} Gold!)`;
-        updateDisplay();
-        if (activeGame.rollcnt % 3 === 0) autoSave();
+
+        // Start 1.5s shuffle (every 0.25s)
+        let shuffle = setInterval(() => {
+            const randomName = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
+            resDiv.innerHTML = `<span style="color:#aaa">${randomName}...</span>`;
+        }, 250);
+
+        setTimeout(async () => {
+            clearInterval(shuffle);
+            resDiv.innerHTML = `💎 <strong>${res.gem}</strong><br><small style="font-size:14px; color:#28a745;">+${res.gain.toLocaleString()} Gold (1 in ${res.rarity.toLocaleString()})</small>`;
+            
+            updateDisplay();
+            btn.disabled = false;
+            if (activeGame.rollcnt % 3 === 0) await autoSave();
+        }, 1500);
     };
 
     document.getElementById('upgradeBtn').onclick = async () => {
@@ -179,45 +174,33 @@
             activeGame.gold -= cost;
             activeGame.multi += 0.01;
             updateDisplay();
-            autoSave();
+            await autoSave();
         } else {
             alert("Not enough gold!");
         }
     };
 
     async function autoSave() {
-        document.getElementById('saveStatus').innerText = "Autosaving...";
+        document.getElementById('saveStatus').innerText = "Syncing with cloud...";
         await setDoc(doc(db, "players", activeGame.name), {
             multi: activeGame.multi,
             gold: activeGame.gold,
             rollcnt: activeGame.rollcnt
         });
-        setTimeout(() => { document.getElementById('saveStatus').innerText = "Cloud Synced ✅"; }, 800);
+        setTimeout(() => { document.getElementById('saveStatus').innerText = "Progress Saved ✅"; }, 500);
     }
 
     function updateDisplay() {
         if (!activeGame) return;
-
         let n = Math.round((activeGame.multi - 1.0) / 0.01);
         let nextCost = 5 * Math.pow(2, n);
-
-        // This matches the IDs in the HTML block above
+        
         document.getElementById('pName').innerText = activeGame.name;
         document.getElementById('pMulti').innerText = activeGame.multi.toFixed(2);
         document.getElementById('pGold').innerText = activeGame.gold.toLocaleString();
-        document.getElementById('pRolls').innerText = activeGame.rollcnt; // This should show now!
+        document.getElementById('pRolls').innerText = activeGame.rollcnt;
         document.getElementById('upgradeCost').innerText = nextCost.toLocaleString();
     }
-    document.getElementById('rollBtn').onclick = async () => {
-        if (!activeGame) return;
-        const res = activeGame.roll();
-        document.getElementById('rollResult').innerHTML = 
-            `💎 Found: <strong>${res.gem}</strong> (+${res.gain} Gold!)<br>
-             <small style="color: #666;">Rarity: 1 in ${res.rarity}</small>`;
-        
-        updateDisplay();
-        if (activeGame.rollcnt % 3 === 0) autoSave();
-    };
   </script>
 </body>
 </html>
