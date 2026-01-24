@@ -40,7 +40,9 @@
         <div id="rollResult" class="gem-display">Ready to roll?</div>
         
         <button id="rollBtn" style="padding: 12px 25px; cursor:pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold;">ROLL</button>
-        
+        <button id="autoRollBtn" style="padding: 12px 25px; cursor:pointer; margin-left: 10px; border-radius: 5px; background:#007bff; color:white;">
+        Auto Roll: OFF
+        </button>
         <button id="upgradeBtn" style="padding: 12px 25px; cursor:pointer; margin-left: 10px; border-radius: 5px;">
             Upgrade Luck (Cost: <span id="upgradeCost">5</span>)
         </button>
@@ -65,7 +67,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const MULTI_STEP = 0.75;
+    const MULTI_STEP = 0.05;
     const ROLL_COUNT = 5;
     const SHUFFLE_INTERVAL = 80;
     const SHUFFLE_DURATION = 500;
@@ -136,6 +138,9 @@ static PRIZES = [
     }
 
     let activeGame = null;
+    let autoRollInterval = null;
+    let autoRollEnabled = false;
+
 
     document.getElementById('loadGameBtn').onclick = async () => {
         const name = document.getElementById('userCodeInput').value;
@@ -153,6 +158,23 @@ static PRIZES = [
         document.getElementById('game-ui').style.display = 'block';
         updateDisplay();
     };
+    document.getElementById('autoRollBtn').onclick = () => {
+    const btn = document.getElementById('autoRollBtn');
+    if (!activeGame) return;
+    
+    autoRollEnabled = !autoRollEnabled;
+    btn.innerText = `Auto Roll: ${autoRollEnabled ? 'ON' : 'OFF'}`;
+    
+    if (autoRollEnabled) {
+        autoRollInterval = setInterval(() => {
+            if (!document.getElementById('rollBtn').disabled) {
+                document.getElementById('rollBtn').click();
+            }
+        }, SHUFFLE_DURATION + 200); // wait for animation + buffer
+    } else {
+        clearInterval(autoRollInterval);
+    }
+};
 
     document.getElementById('rollBtn').onclick = async () => {
     if (!activeGame || document.getElementById('rollBtn').disabled) return;
