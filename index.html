@@ -185,7 +185,7 @@
                 updateDisplay();
                 if (activeGame.rollcnt % 3 === 0) autoSave();
             }
-        }, (i + 1) * (SHUFFLE_DURATION / ROLL_COUNT));
+        }, (i + 1) * (SHUFFLE_DURATION / ROLL_COUNT) * 2);
     });
 };
 
