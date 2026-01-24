@@ -66,8 +66,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const MULTI_STEP = 0.5;
+    const ROLL_COUNT = 5;
+    const SHUFFLE_INTERVAL = 80;
+    const SHUFFLE_DURATION = 500;
 
-    // --- PART 1: COMMENT BOARD ---
+
     const colRef = collection(db, "entries");
     document.getElementById('btn').onclick = async () => {
       const val = document.getElementById('in').value;
@@ -85,7 +88,7 @@
       document.getElementById('list').scrollTop = document.getElementById('list').scrollHeight;
     });
 
-    // --- PART 2: GAME LOGIC (OOP) ---
+    // OOP (还有op?）
     class GameSession {
         static JEWELLERY = ["Jasper", "Agate", "Tiger's Eye", "Onyx", "Turquoise", "Lapis Lazuli", "Citrine", "Garnet", "Peridot", "Amethyst", "Topaz", "Aquamarine", "Tourmaline", "Opal", "Zircon", "Spinel", "Emerald", "Sapphire", "Ruby", "Diamond"];
         static PRIZES = [1, 3, 8, 15, 30, 60, 120, 250, 500, 1000, 2500, 5000, 12000, 25000, 50000, 120000, 250000, 600000, 1500000, 5000000];
@@ -121,7 +124,6 @@
 
     let activeGame = null;
 
-    // --- PART 3: UI & ANIMATION ---
     document.getElementById('loadGameBtn').onclick = async () => {
         const name = document.getElementById('userCodeInput').value;
         if (!name) return alert("Username required!");
@@ -147,22 +149,26 @@
         
         // Disable interactions
         btn.disabled = true;
-        const res = activeGame.roll();
+        const results = [];
+        for (let i = 0; i < ROLL_COUNT; i++) {
+            results.push(activeGame.roll());
+        }
 
         // Start 1.5s shuffle (every 0.25s)
         let shuffle = setInterval(() => {
-            const randomName = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
+        const randomName = GameSession.JEWELLERY[Math.floor(Math.random() * GameSession.JEWELLERY.length)];
             resDiv.innerHTML = `<span style="color:#aaa">${randomName}...</span>`;
-        }, 100);
+        }, SHUFFLE_INTERVAL);
 
         setTimeout(async () => {
             clearInterval(shuffle);
-            resDiv.innerHTML = `💎 <strong>${res.gem}</strong><br><small style="font-size:14px; color:#28a745;">+${res.gain.toLocaleString()} Gold (1 in ${res.rarity.toLocaleString()})</small>`;
+            resDiv.innerHTML = results.map(r => `💎 <strong>${r.gem}</strong> <small style="color:#28a745;">+${r.gain.toLocaleString()} Gold (1 in ${r.rarity.toLocaleString()})</small>`).join('<br>');
+
             
             updateDisplay();
             btn.disabled = false;
             if (activeGame.rollcnt % 3 === 0) await autoSave();
-        }, 700);
+        }, SHUFFLE_DURATION);
     };
 
     document.getElementById('upgradeBtn').onclick = async () => {
