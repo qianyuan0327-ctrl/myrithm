@@ -67,10 +67,11 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const MULTI_STEP = 0.2;
+    const MULTI_STEP = 0.1;
     const ROLL_COUNT = 5;
     const SHUFFLE_INTERVAL = 80;
     const SHUFFLE_DURATION = 500;
+    const COST_MULTI
 
 
     const colRef = collection(db, "entries");
@@ -229,7 +230,7 @@ static PRIZES = [
     document.getElementById('upgradeBtn').onclick = async () => {
         if (!activeGame) return;
         let n = Math.round((activeGame.multi - 1.0) / MULTI_STEP);
-        let cost = 5 * Math.pow(2, n);
+        let cost = floor(5 * Math.pow(COST_MILTI, n));
 
         if (activeGame.gold >= cost) {
             activeGame.gold -= cost;
@@ -254,7 +255,7 @@ static PRIZES = [
     function updateDisplay() {
         if (!activeGame) return;
         let n = Math.round((activeGame.multi - 1.0) / MULTI_STEP);
-        let nextCost = 5 * Math.pow(2, n);
+        let nextCost = floor(5 * Math.pow(COST_MULTI, n));
         
         document.getElementById('pName').innerText = activeGame.name;
         document.getElementById('pMulti').innerText = activeGame.multi.toFixed(2);
