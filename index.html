@@ -230,7 +230,7 @@ static PRIZES = [
     document.getElementById('upgradeBtn').onclick = async () => {
         if (!activeGame) return;
         let n = Math.round((activeGame.multi - 1.0) / MULTI_STEP);
-        let cost = floor(5 * Math.pow(COST_MILTI, n));
+        let cost = Math.floor(5 * Math.pow(COST_MULTI, n));
 
         if (activeGame.gold >= cost) {
             activeGame.gold -= cost;
@@ -255,7 +255,7 @@ static PRIZES = [
     function updateDisplay() {
         if (!activeGame) return;
         let n = Math.round((activeGame.multi - 1.0) / MULTI_STEP);
-        let nextCost = floor(5 * Math.pow(COST_MULTI, n));
+        let nextCost = Math.floor(5 * Math.pow(COST_MULTI, n));
         
         document.getElementById('pName').innerText = activeGame.name;
         document.getElementById('pMulti').innerText = activeGame.multi.toFixed(2);
