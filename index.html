@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Gem Roller Pro</title> 
+  <title>Board</title> 
   <style>
     body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
     #list { height: 180px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; list-style: none; background: white; margin-bottom: 20px; }
@@ -67,7 +67,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const MULTI_STEP = 0.05;
+    const MULTI_STEP = 0.2;
     const ROLL_COUNT = 5;
     const SHUFFLE_INTERVAL = 80;
     const SHUFFLE_DURATION = 500;
