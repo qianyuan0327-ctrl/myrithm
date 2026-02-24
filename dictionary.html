@@ -39,11 +39,18 @@
       border-radius: 4px;
       color: black;
     }
+    .switch-btn {
+      margin-bottom: 20px;
+      background-color: #def;
+      border-color: #89c;
+    }
   </style>
 </head>
 <body>
 
 <h2>Ashvahi Word Translator</h2>
+
+<button id="switchBtn" class="switch-btn">Mode: English → Ashvahi</button>
 
 <div class="container">
   <input type="text" id="wordInput" placeholder="Enter one word">
@@ -84,7 +91,8 @@
     reverseDict[dictionary[key].word.toLowerCase()] = key;
   }
 
-  // Function to pluralise Ashvahi words
+  let mode = "enToAsh"; // default translation mode
+
   function pluralAshvahi(entry) {
     let base = entry.word;
     let phon = entry.phon;
@@ -96,7 +104,6 @@
     return base + " /" + phon + "-oos/";
   }
 
-  // Function to pluralise English words (simple)
   function pluralEnglish(word) {
     if (word.endsWith("y") && !"aeiou".includes(word[word.length-2])) {
       return word.slice(0, -1) + "ies";
@@ -109,40 +116,56 @@
     const input = inputRaw.toLowerCase();
     const resultDiv = document.getElementById("result");
 
-    // English → Ashvahi
-    if (dictionary[input]) {
-      resultDiv.textContent = dictionary[input].word + " /" + dictionary[input].phon + "/";
+    if (!input) {
+      resultDiv.textContent = "Please enter a word.";
       return;
     }
 
-    // English plural → Ashvahi
-    if (input.endsWith("s") && dictionary[input.slice(0, -1)]) {
-      resultDiv.textContent = pluralAshvahi(dictionary[input.slice(0, -1)]);
-      return;
-    }
-
-    // Ashvahi → English
-    if (reverseDict[input]) {
-      resultDiv.textContent = reverseDict[input];
-      return;
-    }
-
-    // Ashvahi plural → English
-    if (input.endsWith("us")) {
-      const base = input.slice(0, -2);
-      if (reverseDict[base]) {
-        resultDiv.textContent = pluralEnglish(reverseDict[base]);
+    if (mode === "enToAsh") {
+      // English → Ashvahi
+      if (dictionary[input]) {
+        resultDiv.textContent = dictionary[input].word + " /" + dictionary[input].phon + "/";
         return;
+      }
+      // English plural → Ashvahi
+      if (input.endsWith("s") && dictionary[input.slice(0, -1)]) {
+        resultDiv.textContent = pluralAshvahi(dictionary[input.slice(0, -1)]);
+        return;
+      }
+    } else {
+      // Ashvahi → English
+      if (reverseDict[input]) {
+        resultDiv.textContent = reverseDict[input];
+        return;
+      }
+      // Ashvahi plural → English
+      if (input.endsWith("us")) {
+        const base = input.slice(0, -2);
+        if (reverseDict[base]) {
+          resultDiv.textContent = pluralEnglish(reverseDict[base]);
+          return;
+        }
       }
     }
 
     resultDiv.textContent = "Word not found.";
   }
 
-  // Button click and Enter key
   document.getElementById("translateBtn").addEventListener("click", translateWord);
   document.getElementById("wordInput").addEventListener("keypress", function(e) {
     if (e.key === "Enter") translateWord();
+  });
+
+  document.getElementById("switchBtn").addEventListener("click", function() {
+    if (mode === "enToAsh") {
+      mode = "ashToEn";
+      this.textContent = "Mode: Ashvahi → English";
+    } else {
+      mode = "enToAsh";
+      this.textContent = "Mode: English → Ashvahi";
+    }
+    document.getElementById("result").textContent = "";
+    document.getElementById("wordInput").value = "";
   });
 </script>
 
