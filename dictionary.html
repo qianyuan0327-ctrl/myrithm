@@ -115,9 +115,11 @@
             let translated = isPlural ? ash + "us" : ash;
 
             if (singleWord) {
-              output.push(`"${translated} /${dictionary[ash].phon}/"`);
-            } else {
-              output.push(translated);
+              let phon = dictionary[ash].phon;
+              if (isPlural) {
+                phon = phon.replace(/$/, "-oos");
+              }
+              output.push(`"${translated} /${phon}/"`);
             }
 
             found = true;
