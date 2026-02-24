@@ -21,9 +21,19 @@
       cursor: pointer;
       margin-right: 8px;
     }
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+    .box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
     #result {
-      margin-top: 15px;
-      font-weight: bold;
+      border: 1px solid #ccc;
+      min-height: 100px;
+      padding: 8px;
       white-space: pre-wrap;
     }
   </style>
@@ -34,8 +44,18 @@
 
 <button id="switchBtn">Mode: English → Ashvahi</button>
 
-<textarea id="inputText" placeholder="Enter a sentence..."></textarea>
-<br>
+<div class="container">
+  <div class="box">
+    <h3>Input</h3>
+    <textarea id="inputText" placeholder="Enter a sentence..."></textarea>
+  </div>
+
+  <div class="box">
+    <h3>Output</h3>
+    <div id="result"></div>
+  </div>
+</div>
+
 <button id="translateBtn">Translate</button>
 <br>
 <a href="/myrithm/ashvahi.html">
