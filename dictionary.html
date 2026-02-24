@@ -27,8 +27,17 @@
       font-weight: bold;
       margin-top: 10px;
     }
-    .back {
+    .back-btn {
+      display: inline-block;
       margin-top: 20px;
+      padding: 8px 12px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      color: black;
     }
   </style>
 </head>
@@ -43,20 +52,14 @@
 
 <div id="result"></div>
 
-<div class="back">
-  <a href="/myrithm/ashvahi.html">
-    <button>Go Back</button>
-  </a>
-</div>
+<a href="/myrithm/ashvahi.html" class="back-btn">Go Back</a>
 
 <script>
-  // Dictionary: English -> Ashvahi
   const dictionary = {
     "i": { word: "esh", phon: "eh-sh" },
     "we": { word: "eshus", phon: "eh-shus" },
     "you": { word: "vek", phon: "vek" },
     "they": { word: "lyn", phon: "leen" },
-
     "eat": { word: "mar", phon: "mar" },
     "go": { word: "vor", phon: "vor" },
     "speak": { word: "sav", phon: "sav" },
@@ -65,7 +68,6 @@
     "take": { word: "kren", phon: "kren" },
     "be": { word: "es", phon: "es" },
     "have": { word: "ha", phon: "ha" },
-
     "food": { word: "far", phon: "far" },
     "home": { word: "dom", phon: "dom" },
     "house": { word: "dom", phon: "dom" },
@@ -76,12 +78,13 @@
     "fire": { word: "fyr", phon: "feer" }
   };
 
-  // Ashvahi -> English reverse lookup
+  // Reverse lookup: Ashvahi → English
   const reverseDict = {};
   for (let key in dictionary) {
-    reverseDict[dictionary[key].word] = key;
+    reverseDict[dictionary[key].word.toLowerCase()] = key;
   }
 
+  // Function to pluralise Ashvahi words
   function pluralAshvahi(entry) {
     let base = entry.word;
     let phon = entry.phon;
@@ -93,34 +96,54 @@
     return base + " /" + phon + "-oos/";
   }
 
+  // Function to pluralise English words (simple)
+  function pluralEnglish(word) {
+    if (word.endsWith("y") && !"aeiou".includes(word[word.length-2])) {
+      return word.slice(0, -1) + "ies";
+    }
+    return word + "s";
+  }
+
   function translateWord() {
-    const input = document.getElementById("wordInput").value.trim().toLowerCase();
+    const inputRaw = document.getElementById("wordInput").value.trim();
+    const input = inputRaw.toLowerCase();
     const resultDiv = document.getElementById("result");
 
+    // English → Ashvahi
     if (dictionary[input]) {
-      // English → Ashvahi
-      const entry = dictionary[input];
-      resultDiv.textContent = entry.word + " /" + entry.phon + "/";
+      resultDiv.textContent = dictionary[input].word + " /" + dictionary[input].phon + "/";
       return;
     }
 
+    // English plural → Ashvahi
     if (input.endsWith("s") && dictionary[input.slice(0, -1)]) {
-      // English plural
       resultDiv.textContent = pluralAshvahi(dictionary[input.slice(0, -1)]);
       return;
     }
 
+    // Ashvahi → English
     if (reverseDict[input]) {
-      // Ashvahi → English
       resultDiv.textContent = reverseDict[input];
       return;
+    }
+
+    // Ashvahi plural → English
+    if (input.endsWith("us")) {
+      const base = input.slice(0, -2);
+      if (reverseDict[base]) {
+        resultDiv.textContent = pluralEnglish(reverseDict[base]);
+        return;
+      }
     }
 
     resultDiv.textContent = "Word not found.";
   }
 
-  // Attach function to button
+  // Button click and Enter key
   document.getElementById("translateBtn").addEventListener("click", translateWord);
+  document.getElementById("wordInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") translateWord();
+  });
 </script>
 
 </body>
