@@ -62,7 +62,6 @@
   <button>Back</button>
 </a>
 
-<div id="result"></div>
 
 <script>
   const dictionary = {
@@ -120,57 +119,66 @@
   let mode = "enToAsh";
 
   function translateSentence() {
-    const input = document.getElementById("inputText").value.trim();
-    const words = input.toLowerCase().replace(/[.,!?]/g, "").split(/\s+/);
-    const singleWord = words.length === 1;
+  const input = document.getElementById("inputText").value.trim();
+  const words = input.toLowerCase().replace(/[.,!?]/g, "").split(/\s+/);
+  const singleWord = words.length === 1;
 
-    let output = [];
+  let output = [];
+  let unknownWords = [];
 
-    if (mode === "enToAsh") {
-      words.forEach(word => {
-        let found = false;
+  if (mode === "enToAsh") {
+    words.forEach(word => {
+      let found = false;
 
-        // Handle English plural (ends with s)
-        let isPlural = word.endsWith("s");
-        let baseWord = isPlural ? word.slice(0, -1) : word;
+      let isPlural = word.endsWith("s");
+      let baseWord = isPlural ? word.slice(0, -1) : word;
 
-        for (let ash in dictionary) {
-          if (dictionary[ash].en.includes(baseWord)) {
-            let translated = isPlural ? ash + "us" : ash;
+      for (let ash in dictionary) {
+        if (dictionary[ash].en.includes(baseWord)) {
+          let translated = isPlural ? ash + "us" : ash;
 
-            if (singleWord) {
-              let phon = dictionary[ash].phon;
-              if (isPlural) {
-                phon = phon.replace(/$/, "-oos");
-              }
-              output.push(`${translated} /${phon}/`);
-            }
-
-            found = true;
-            break;
+          if (singleWord) {
+            let phon = dictionary[ash].phon;
+            if (isPlural) phon += "-oos";
+            output.push(`${translated} /${phon}/`);
+          } else {
+            output.push(translated);
           }
+
+          found = true;
+          break;
         }
+      }
 
-        if (!found) output.push("___");
-      });
+      if (!found) {
+        output.push("___");
+        unknownWords.push(word);
+      }
+    });
 
-    } else { // Ashvahi → English
+  } else {
+    words.forEach(word => {
+      let isPlural = word.endsWith("us");
+      let baseWord = isPlural ? word.slice(0, -2) : word;
 
-      words.forEach(word => {
-        let isPlural = word.endsWith("us");
-        let baseWord = isPlural ? word.slice(0, -2) : word;
-
-        if (dictionary[baseWord]) {
-          let english = dictionary[baseWord].en[0];
-          output.push(isPlural ? english + "s" : english);
-        } else {
-          output.push("___");
-        }
-      });
-    }
-
-    document.getElementById("result").textContent = output.join(" ");
+      if (dictionary[baseWord]) {
+        let english = dictionary[baseWord].en[0];
+        output.push(isPlural ? english + "s" : english);
+      } else {
+        output.push("___");
+        unknownWords.push(word);
+      }
+    });
   }
+
+  let finalText = output.join(" ");
+
+  if (unknownWords.length > 0) {
+    finalText += "\n\nUnknown word(s): " + unknownWords.join(", ");
+  }
+
+  document.getElementById("result").textContent = finalText;
+}
 
   document.getElementById("translateBtn")
     .addEventListener("click", translateSentence);
