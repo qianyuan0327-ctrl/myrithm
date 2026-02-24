@@ -1,1 +1,132 @@
-//File content here
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ashvahi Word Translator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 500px;
+    }
+
+    .container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    input {
+      flex: 1;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #result {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .back {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Ashvahi Word Translator</h2>
+
+<div class="container">
+  <input type="text" id="wordInput" placeholder="Enter one word">
+  <button onclick="translate()">Translate</button>
+</div>
+
+<div id="result"></div>
+
+<div class="back">
+  <a href="/myrithm/ashvahi.html">
+    <button>Go Back</button>
+  </a>
+</div>
+
+<script>
+const dictionary = {
+  "i": { word: "esh", phon: "eh-sh" },
+  "we": { word: "eshus", phon: "eh-shus" },
+  "you": { word: "vek", phon: "vek" },
+  "they": { word: "lyn", phon: "leen" },
+
+  "eat": { word: "mar", phon: "mar" },
+  "go": { word: "vor", phon: "vor" },
+  "speak": { word: "sav", phon: "sav" },
+  "see": { word: "lum", phon: "luum" },
+  "want": { word: "thal", phon: "th-al" },
+  "take": { word: "kren", phon: "kren" },
+  "be": { word: "es", phon: "es" },
+  "have": { word: "ha", phon: "ha" },
+
+  "food": { word: "far", phon: "far" },
+  "home": { word: "dom", phon: "dom" },
+  "house": { word: "dom", phon: "dom" },
+  "sun": { word: "sol", phon: "sol" },
+  "moon": { word: "lun", phon: "lun" },
+  "water": { word: "acq", phon: "ahk" },
+  "friend": { word: "lur", phon: "loor" },
+  "fire": { word: "fyr", phon: "feer" }
+};
+
+// Build reverse lookup
+const reverseDict = {};
+for (let key in dictionary) {
+  reverseDict[dictionary[key].word] = key;
+}
+
+function pluralAshvahi(entry) {
+  let base = entry.word;
+  let phon = entry.phon;
+
+  if (/[aeiou]$/.test(base)) {
+    base = base.slice(0, -1) + "us";
+  } else {
+    base = base + "us";
+  }
+
+  return base + " /" + phon + "-oos/";
+}
+
+function translate() {
+  const input = document.getElementById("wordInput").value.trim().toLowerCase();
+
+  // English singular
+  if (dictionary[input]) {
+    const entry = dictionary[input];
+    document.getElementById("result").innerHTML =
+      entry.word + " /" + entry.phon + "/";
+    return;
+  }
+
+  // English plural (ends with s)
+  if (input.endsWith("s") && dictionary[input.slice(0, -1)]) {
+    document.getElementById("result").innerHTML =
+      pluralAshvahi(dictionary[input.slice(0, -1)]);
+    return;
+  }
+
+  // Ashvahi → English
+  if (reverseDict[input]) {
+    document.getElementById("result").textContent =
+      reverseDict[input];
+    return;
+  }
+
+  document.getElementById("result").textContent = "Word not found.";
+}
+</script>
+
+</body>
+</html>
