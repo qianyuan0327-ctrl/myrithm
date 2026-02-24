@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ashvahi Word Translator</title>
+  <title>Hanvahi</title>
   <style>
     body {
       font-family: sans-serif;
@@ -39,7 +39,7 @@
 </head>
 <body>
 
-<h2>Ashvahi Word Translator</h2>
+<h2>The dictionary</h2>
 
 <div class="container">
   <input type="text" id="wordInput" placeholder="Enter one word">
@@ -56,6 +56,7 @@
 
 <script>
 const dictionary = {
+  // English → Ashvahi
   "i": { word: "esh", phon: "eh-sh" },
   "we": { word: "eshus", phon: "eh-shus" },
   "you": { word: "vek", phon: "vek" },
@@ -80,7 +81,7 @@ const dictionary = {
   "fire": { word: "fyr", phon: "feer" }
 };
 
-// Build reverse lookup
+// Reverse dictionary Ashvahi → English
 const reverseDict = {};
 for (let key in dictionary) {
   reverseDict[dictionary[key].word] = key;
@@ -89,30 +90,28 @@ for (let key in dictionary) {
 function pluralAshvahi(entry) {
   let base = entry.word;
   let phon = entry.phon;
-
   if (/[aeiou]$/.test(base)) {
     base = base.slice(0, -1) + "us";
   } else {
     base = base + "us";
   }
-
   return base + " /" + phon + "-oos/";
 }
 
 function translate() {
   const input = document.getElementById("wordInput").value.trim().toLowerCase();
 
-  // English singular
+  // English → Ashvahi
   if (dictionary[input]) {
     const entry = dictionary[input];
-    document.getElementById("result").innerHTML =
+    document.getElementById("result").textContent =
       entry.word + " /" + entry.phon + "/";
     return;
   }
 
-  // English plural (ends with s)
+  // English plural
   if (input.endsWith("s") && dictionary[input.slice(0, -1)]) {
-    document.getElementById("result").innerHTML =
+    document.getElementById("result").textContent =
       pluralAshvahi(dictionary[input.slice(0, -1)]);
     return;
   }
