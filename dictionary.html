@@ -37,6 +37,7 @@
 <textarea id="inputText" placeholder="Enter a sentence..."></textarea>
 <br>
 <button id="translateBtn">Translate</button>
+<button id="back-button" href="" >
 
 <div id="result"></div>
 
@@ -119,7 +120,7 @@
               if (isPlural) {
                 phon = phon.replace(/$/, "-oos");
               }
-              output.push(`"${translated} /${phon}/"`);
+              output.push(`${translated} /${phon}/`);
             }
 
             found = true;
