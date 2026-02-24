@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ashvahi Translator</title>
+  <title>Vashavahi</title>
   <style>
     body {
       font-family: sans-serif;
@@ -41,16 +41,12 @@
 <div id="result"></div>
 
 <script>
-  // English → Ashvahi dictionary
   const enToAsh = {
-
-    // Core
     "communication": "vahi",
     "language": "vahi",
     "original": "ash",
     "first": "ash",
 
-    // Pronouns
     "i": "esh",
     "we": "eshus",
     "you": "vek",
@@ -58,7 +54,6 @@
     "he": "lyn",
     "she": "lyn",
 
-    // Verbs
     "eat": "mar",
     "go": "vor",
     "speak": "sav",
@@ -71,7 +66,6 @@
     "are": "es",
     "have": "ha",
 
-    // Nouns
     "food": "far",
     "home": "dom",
     "house": "dom",
@@ -81,24 +75,20 @@
     "friend": "lur",
     "fire": "fyr",
 
-    // Connectives
     "and": "en",
     "or": "vel",
     "not": "ne",
     "because": "narek",
 
-    // Prepositions
     "in": "nar",
     "inside": "nar",
     "at": "nar",
     "outside": "eksar",
     "out": "eksar",
 
-    // Greetings
     "hello": "suhavi",
     "goodbye": "lurashnelum",
 
-    // Numbers
     "one": "un",
     "two": "du",
     "three": "tre",
@@ -111,7 +101,6 @@
     "zero": "nul"
   };
 
-  // Build reverse dictionary automatically
   const ashToEn = {};
   for (let key in enToAsh) {
     ashToEn[enToAsh[key]] = key;
@@ -123,18 +112,41 @@
     const input = document.getElementById("inputText").value;
     const words = input
       .toLowerCase()
-      .replace(/[.,!?]/g, "") // remove punctuation
+      .replace(/[.,!?]/g, "")
       .split(/\s+/);
 
+    let unknownWords = new Set();
+
     const translated = words.map(word => {
+      if (!word) return "";
+
       if (mode === "enToAsh") {
-        return enToAsh[word] || word;
+        if (enToAsh[word]) {
+          return enToAsh[word];
+        } else {
+          unknownWords.add(word);
+          return "___";
+        }
       } else {
-        return ashToEn[word] || word;
+        if (ashToEn[word]) {
+          return ashToEn[word];
+        } else {
+          unknownWords.add(word);
+          return "___";
+        }
       }
     });
 
-    document.getElementById("result").textContent = translated.join(" ");
+    let output = translated.join(" ");
+
+    if (unknownWords.size > 0) {
+      output += "\n\n";
+      unknownWords.forEach(word => {
+        output += `(${word}) not found.\n`;
+      });
+    }
+
+    document.getElementById("result").textContent = output;
   }
 
   document.getElementById("translateBtn")
@@ -151,7 +163,6 @@
       }
       document.getElementById("result").textContent = "";
     });
-
 </script>
 
 </body>
