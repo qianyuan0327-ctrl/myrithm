@@ -1,37 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hanvahi</title>
+  <title>Vahivasha</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 20px;
       max-width: 500px;
     }
-
     .container {
       display: flex;
       gap: 8px;
       margin-bottom: 15px;
     }
-
     input {
       flex: 1;
       padding: 8px;
       font-size: 16px;
     }
-
     button {
       padding: 8px 12px;
       font-size: 16px;
       cursor: pointer;
     }
-
     #result {
       font-weight: bold;
       margin-top: 10px;
     }
-
     .back {
       margin-top: 20px;
     }
@@ -39,11 +34,11 @@
 </head>
 <body>
 
-<h2>The dictionary</h2>
+<h2>Ashvahi Word Translator</h2>
 
 <div class="container">
   <input type="text" id="wordInput" placeholder="Enter one word">
-  <button onclick="translate()">Translate</button>
+  <button id="translateBtn">Translate</button>
 </div>
 
 <div id="result"></div>
@@ -55,76 +50,77 @@
 </div>
 
 <script>
-const dictionary = {
-  // English → Ashvahi
-  "i": { word: "esh", phon: "eh-sh" },
-  "we": { word: "eshus", phon: "eh-shus" },
-  "you": { word: "vek", phon: "vek" },
-  "they": { word: "lyn", phon: "leen" },
+  // Dictionary: English -> Ashvahi
+  const dictionary = {
+    "i": { word: "esh", phon: "eh-sh" },
+    "we": { word: "eshus", phon: "eh-shus" },
+    "you": { word: "vek", phon: "vek" },
+    "they": { word: "lyn", phon: "leen" },
 
-  "eat": { word: "mar", phon: "mar" },
-  "go": { word: "vor", phon: "vor" },
-  "speak": { word: "sav", phon: "sav" },
-  "see": { word: "lum", phon: "luum" },
-  "want": { word: "thal", phon: "th-al" },
-  "take": { word: "kren", phon: "kren" },
-  "be": { word: "es", phon: "es" },
-  "have": { word: "ha", phon: "ha" },
+    "eat": { word: "mar", phon: "mar" },
+    "go": { word: "vor", phon: "vor" },
+    "speak": { word: "sav", phon: "sav" },
+    "see": { word: "lum", phon: "luum" },
+    "want": { word: "thal", phon: "th-al" },
+    "take": { word: "kren", phon: "kren" },
+    "be": { word: "es", phon: "es" },
+    "have": { word: "ha", phon: "ha" },
 
-  "food": { word: "far", phon: "far" },
-  "home": { word: "dom", phon: "dom" },
-  "house": { word: "dom", phon: "dom" },
-  "sun": { word: "sol", phon: "sol" },
-  "moon": { word: "lun", phon: "lun" },
-  "water": { word: "acq", phon: "ahk" },
-  "friend": { word: "lur", phon: "loor" },
-  "fire": { word: "fyr", phon: "feer" }
-};
+    "food": { word: "far", phon: "far" },
+    "home": { word: "dom", phon: "dom" },
+    "house": { word: "dom", phon: "dom" },
+    "sun": { word: "sol", phon: "sol" },
+    "moon": { word: "lun", phon: "lun" },
+    "water": { word: "acq", phon: "ahk" },
+    "friend": { word: "lur", phon: "loor" },
+    "fire": { word: "fyr", phon: "feer" }
+  };
 
-// Reverse dictionary Ashvahi → English
-const reverseDict = {};
-for (let key in dictionary) {
-  reverseDict[dictionary[key].word] = key;
-}
-
-function pluralAshvahi(entry) {
-  let base = entry.word;
-  let phon = entry.phon;
-  if (/[aeiou]$/.test(base)) {
-    base = base.slice(0, -1) + "us";
-  } else {
-    base = base + "us";
-  }
-  return base + " /" + phon + "-oos/";
-}
-
-function translate() {
-  const input = document.getElementById("wordInput").value.trim().toLowerCase();
-
-  // English → Ashvahi
-  if (dictionary[input]) {
-    const entry = dictionary[input];
-    document.getElementById("result").textContent =
-      entry.word + " /" + entry.phon + "/";
-    return;
+  // Ashvahi -> English reverse lookup
+  const reverseDict = {};
+  for (let key in dictionary) {
+    reverseDict[dictionary[key].word] = key;
   }
 
-  // English plural
-  if (input.endsWith("s") && dictionary[input.slice(0, -1)]) {
-    document.getElementById("result").textContent =
-      pluralAshvahi(dictionary[input.slice(0, -1)]);
-    return;
+  function pluralAshvahi(entry) {
+    let base = entry.word;
+    let phon = entry.phon;
+    if (/[aeiou]$/.test(base)) {
+      base = base.slice(0, -1) + "us";
+    } else {
+      base = base + "us";
+    }
+    return base + " /" + phon + "-oos/";
   }
 
-  // Ashvahi → English
-  if (reverseDict[input]) {
-    document.getElementById("result").textContent =
-      reverseDict[input];
-    return;
+  function translateWord() {
+    const input = document.getElementById("wordInput").value.trim().toLowerCase();
+    const resultDiv = document.getElementById("result");
+
+    if (dictionary[input]) {
+      // English → Ashvahi
+      const entry = dictionary[input];
+      resultDiv.textContent = entry.word + " /" + entry.phon + "/";
+      return;
+    }
+
+    if (input.endsWith("s") && dictionary[input.slice(0, -1)]) {
+      // English plural
+      resultDiv.textContent = pluralAshvahi(dictionary[input.slice(0, -1)]);
+      return;
+    }
+
+    if (reverseDict[input]) {
+      // Ashvahi → English
+      resultDiv.textContent = reverseDict[input];
+      return;
+    }
+
+    resultDiv.textContent = "Word not found.";
   }
 
-  document.getElementById("result").textContent = "Word not found.";
-}
+  // Attach function to button
+  document.getElementById("translateBtn").addEventListener("click", translateWord);
 </script>
 
 </body>
