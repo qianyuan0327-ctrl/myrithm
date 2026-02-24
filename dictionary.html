@@ -41,112 +41,109 @@
 <div id="result"></div>
 
 <script>
-  const enToAsh = {
-    "communication": "vahi",
-    "language": "vahi",
-    "original": "ash",
-    "first": "ash",
+  const dictionary = {
+    "vahi": { en: ["communication", "language"], phon: "vahey" },
+    "ash": { en: ["original", "first"], phon: "aash" },
 
-    "i": "esh",
-    "we": "eshus",
-    "you": "vek",
-    "they": "lyn",
-    "he": "lyn",
-    "she": "lyn",
+    "esh": { en: ["i"], phon: "eh-sh" },
+    "eshus": { en: ["we"], phon: "eh-shus" },
+    "vek": { en: ["you"], phon: "vek" },
+    "vekus": { en: ["you"], phon: "ve-kus" },
+    "lyn": { en: ["they", "he", "she"], phon: "leen" },
+    "lynus": { en: ["they"], phon: "lee-nus" },
 
-    "eat": "mar",
-    "go": "vor",
-    "speak": "sav",
-    "see": "lum",
-    "want": "thal",
-    "take": "kren",
-    "be": "es",
-    "am": "es",
-    "is": "es",
-    "are": "es",
-    "have": "ha",
+    "mar": { en: ["eat"], phon: "mar" },
+    "vor": { en: ["go"], phon: "vor" },
+    "sav": { en: ["speak"], phon: "sav" },
+    "lum": { en: ["see"], phon: "luum" },
+    "thal": { en: ["want"], phon: "th-al" },
+    "kren": { en: ["take"], phon: "kren" },
+    "es": { en: ["be", "am", "is", "are"], phon: "es" },
+    "ha": { en: ["have"], phon: "ha" },
 
-    "food": "far",
-    "home": "dom",
-    "house": "dom",
-    "sun": "sol",
-    "moon": "lun",
-    "water": "acq",
-    "friend": "lur",
-    "fire": "fyr",
+    "far": { en: ["food"], phon: "far" },
+    "dom": { en: ["home", "house"], phon: "dom" },
+    "sol": { en: ["sun"], phon: "sol" },
+    "lun": { en: ["moon"], phon: "lun" },
+    "acq": { en: ["water"], phon: "ahk" },
+    "lur": { en: ["friend"], phon: "loor" },
+    "fyr": { en: ["fire"], phon: "feer" },
+    "vasha": { en: ["book"], phon: "vasha" },
 
-    "and": "en",
-    "or": "vel",
-    "not": "ne",
-    "because": "narek",
+    "en": { en: ["and"], phon: "en" },
+    "vel": { en: ["or"], phon: "vel" },
+    "ne": { en: ["not"], phon: "ne" },
+    "narek": { en: ["because"], phon: "nah-reck" },
 
-    "in": "nar",
-    "inside": "nar",
-    "at": "nar",
-    "outside": "eksar",
-    "out": "eksar",
+    "nar": { en: ["inside", "in", "at"], phon: "nar" },
+    "eksar": { en: ["outside", "out"], phon: "ek-sar" },
 
-    "hello": "suhavi",
-    "goodbye": "lurashnelum",
+    "suhavi": { en: ["hello"], phon: "soo-va-hee" },
+    "lurashnelum": { en: ["goodbye"], phon: "loor-ash-ne-loom" },
 
-    "one": "un",
-    "two": "du",
-    "three": "tre",
-    "four": "kvar",
-    "five": "pen",
-    "six": "hex",
-    "seven": "sev",
-    "eight": "okt",
-    "nine": "nin",
-    "zero": "nul"
+    "un": { en: ["one"], phon: "oon" },
+    "du": { en: ["two"], phon: "doo" },
+    "tre": { en: ["three"], phon: "treh" },
+    "kvar": { en: ["four"], phon: "kvar" },
+    "pen": { en: ["five"], phon: "pen" },
+    "hex": { en: ["six"], phon: "heks" },
+    "sev": { en: ["seven"], phon: "sev" },
+    "okt": { en: ["eight"], phon: "okt" },
+    "nin": { en: ["nine"], phon: "neen" },
+    "nul": { en: ["zero"], phon: "nool" }
   };
-
-  const ashToEn = {};
-  for (let key in enToAsh) {
-    ashToEn[enToAsh[key]] = key;
-  }
 
   let mode = "enToAsh";
 
   function translateSentence() {
-    const input = document.getElementById("inputText").value;
-    const words = input
-      .toLowerCase()
-      .replace(/[.,!?]/g, "")
-      .split(/\s+/);
+    const input = document.getElementById("inputText").value.trim();
+    const words = input.toLowerCase().replace(/[.,!?]/g, "").split(/\s+/);
+    const singleWord = words.length === 1;
 
-    let unknownWords = new Set();
+    let output = [];
 
-    const translated = words.map(word => {
-      if (!word) return "";
+    if (mode === "enToAsh") {
+      words.forEach(word => {
+        let found = false;
 
-      if (mode === "enToAsh") {
-        if (enToAsh[word]) {
-          return enToAsh[word];
-        } else {
-          unknownWords.add(word);
-          return "___";
+        // Handle English plural (ends with s)
+        let isPlural = word.endsWith("s");
+        let baseWord = isPlural ? word.slice(0, -1) : word;
+
+        for (let ash in dictionary) {
+          if (dictionary[ash].en.includes(baseWord)) {
+            let translated = isPlural ? ash + "us" : ash;
+
+            if (singleWord) {
+              output.push(`"${translated} /${dictionary[ash].phon}/"`);
+            } else {
+              output.push(translated);
+            }
+
+            found = true;
+            break;
+          }
         }
-      } else {
-        if (ashToEn[word]) {
-          return ashToEn[word];
+
+        if (!found) output.push("___");
+      });
+
+    } else { // Ashvahi → English
+
+      words.forEach(word => {
+        let isPlural = word.endsWith("us");
+        let baseWord = isPlural ? word.slice(0, -2) : word;
+
+        if (dictionary[baseWord]) {
+          let english = dictionary[baseWord].en[0];
+          output.push(isPlural ? english + "s" : english);
         } else {
-          unknownWords.add(word);
-          return "___";
+          output.push("___");
         }
-      }
-    });
-
-    let output = translated.join(" ");
-
-    if (unknownWords.size > 0) {
-      output += "\n\n";
-      unknownWords.forEach(word => {
-        output += `(${word}) not found.\n`;
       });
     }
 
-    document.getElementById("result").textContent = output;
+    document.getElementById("result").textContent = output.join(" ");
   }
 
   document.getElementById("translateBtn")
