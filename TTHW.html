@@ -9,11 +9,22 @@
       h1 { text-align: center; padding: 20px; }
       #timetable {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        grid-template-rows: repeat(6, 100px);
+        /* 6 columns: 1 for period #, 5 for days */
+        grid-template-columns: 50px repeat(5, 1fr); 
+        /* 7 rows: 1 for day names, 6 for periods */
+        grid-template-rows: 40px repeat(6, 100px); 
         gap: 5px;
-        width: 90%;
+        width: 95%;
         margin: 0 auto;
+      }
+      .header-cell {
+        background-color: #6a5acd;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        border-radius: 4px;
       }
       .timetable-cell {
         background-color: white;
@@ -190,7 +201,23 @@
       function renderTimetable() {
         const container = document.getElementById("timetable");
         container.innerHTML = "";
+      
+        const days = ["", "Mon", "Tue", "Wed", "Thu", "Fri"];
+
+        days.forEach(day => {
+          const cell = document.createElement("div");
+          cell.className = "header-cell";
+          cell.textContent = day;
+          container.appendChild(cell);
+        });
+
         timetableData[currentWeek].forEach((row, rowIndex) => {
+          // Add the Period Number (Left Sidebar)
+          const periodCell = document.createElement("div");
+          periodCell.className = "header-cell";
+          periodCell.textContent = rowIndex + 1;
+          container.appendChild(periodCell);
+
           row.forEach((subject, colIndex) => {
             const room = roomData[currentWeek][rowIndex][colIndex];
             const cell = document.createElement("div");
@@ -199,8 +226,8 @@
               <strong>${subject}</strong>
               <small style="color: #666;">${room}</small>
             `;
+            cell.onclick = () => openPopup(subject);
             container.appendChild(cell);
-            cell.addEventListener("click", () => openPopup(subject, rowIndex, colIndex));
           });
         });
       }
@@ -213,8 +240,7 @@
         modalTitle.textContent = subject;
         overlay.style.display = "flex";
         taskList.innerHTML = "Loading tasks...";
-  
-        // Key Change: Use subject name as the ID so it links all occurrences
+
         const docRef = doc(db, "subjects", subject.replace(/\s+/g, '_'));
   
         const loadTasks = async () => {
@@ -241,7 +267,7 @@
   
         await loadTasks();
   
-        // Reset Save Button
+
         const saveBtn = document.getElementById("saveBtn");
         saveBtn.replaceWith(saveBtn.cloneNode(true));
         document.getElementById("saveBtn").onclick = async () => {
