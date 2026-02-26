@@ -45,7 +45,7 @@
       }
       
       #modal {
-        background-color: white;
+        background-color: #e6e6fa;
         padding: 20px;
         border-radius: 8px;
         width: 300px;
@@ -65,6 +65,11 @@
     <button id="LogoutBtn" style="display:none;">Logout</button>
     </div>
     <h1>Timetabel</h1>
+    <div style="text-align:center; margin-bottom:10px;">
+      <button id="weekA">Week A</button>
+      <button id="weekB">Week B</button>
+      <span id="weekLabel">Week A</span>
+    </div>
     <div style="text-align:center; margin-bottom:10px;">
       <span id="weekLabel">Week A</span>
     </div>
@@ -104,7 +109,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
-      document.getElementById("LoginBtn").onclick = async () => {
+    document.getElementById("LoginBtn").onclick = async () => {
       const email = document.getElementById("adminEmail").value;
       const pass = document.getElementById("adminPass").value;
       try {
@@ -125,11 +130,22 @@
       }
     });
 
+
     document.getElementById("LogoutBtn").onclick = async () => {
       await signOut(auth);
     };
-    let currentWeek = "A"; // current week A/B
+    let currentWeek = "A";
+    document.getElementById("weekA").onclick = () => {
+      currentWeek = "A";
+      document.getElementById("weekLabel").textContent = "Week A";
+      renderTimetable();
+    };
 
+    document.getElementById("weekB").onclick = () => {
+      currentWeek = "B";
+      document.getElementById("weekLabel").textContent = "Week B";
+      renderTimetable();
+    };
     function renderTimetable() {
       const container = document.getElementById("timetable");
       container.innerHTML = "";
@@ -151,12 +167,14 @@
       overlay.style.display = "flex";
       modal.style.transform = "scale(0.8)";
       modal.style.opacity = 0;
-      modal.offsetHeight;
+      modal.offsetHeight; // reflow
       modal.style.transform = "scale(1)";
       modal.style.opacity = 1;
+    
       document.getElementById("modalTitle").textContent = subject;
       const docId = `${currentWeek}-${rowIndex}-${colIndex}`;
       const docRef = doc(db, "timetable", docId);
+
       getDoc(docRef).then(docSnap => {
         if (docSnap.exists()) {
           document.getElementById("taskText").value = docSnap.data().task;
@@ -166,13 +184,16 @@
           document.getElementById("dueDate").value = "";
         }
       });
+
       document.getElementById("closeBtn").onclick = () => overlay.style.display = "none";
+      
       document.getElementById("saveBtn").onclick = async () => {
         const task = document.getElementById("taskText").value;
         const dueDate = document.getElementById("dueDate").value;
         await setDoc(docRef, { subject, task, dueDate });
         overlay.style.display = "none";
       };
+    
       document.getElementById("deleteBtn").onclick = async () => {
         await deleteDoc(docRef);
         document.getElementById("taskText").value = "";
