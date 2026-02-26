@@ -172,11 +172,15 @@
         container.innerHTML = "";
         timetableData[currentWeek].forEach((row, rowIndex) => {
           row.forEach((subject, colIndex) => {
+            const room = roomData[currentWeek][rowIndex][colIndex];
             const cell = document.createElement("div");
             cell.className = "timetable-cell";
-            cell.innerHTML = `<strong>${subject}</strong>`;
-            cell.onclick = () => openPopup(subject);
+            cell.innerHTML = `
+              <strong>${subject}</strong>
+              <small style="color: #666;">${room}</small>
+            `;
             container.appendChild(cell);
+            cell.addEventListener("click", () => openPopup(subject, rowIndex, colIndex));
           });
         });
       }
