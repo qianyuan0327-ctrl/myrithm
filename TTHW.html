@@ -8,7 +8,7 @@
       body {
         margin : 0;
         font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
+        background-color: #e6e6fa;
       }
       h1 {
         text-align: center;
@@ -45,7 +45,7 @@
       }
       
       #modal {
-        background-color: #e6e6fa;
+        background-color: #ff;
         padding: 20px;
         border-radius: 8px;
         width: 300px;
@@ -164,56 +164,78 @@
       overlay.style.display = "flex";
       modal.style.transform = "scale(0.8)";
       modal.style.opacity = 0;
-      modal.offsetHeight; // reflow
+      modal.offsetHeight;
       modal.style.transform = "scale(1)";
       modal.style.opacity = 1;
     
       document.getElementById("modalTitle").textContent = subject;
-      const docId = `${currentWeek}-${rowIndex}-${colIndex}`;
+      const docId = `${currentWeek}-${rowIndex}-${colIndex}-${roomData[currentWeek][rowIndex][colIndex]}`;
       const docRef = doc(db, "timetable", docId);
-
-      getDoc(docRef).then(docSnap => {
-        if (docSnap.exists()) {
-          document.getElementById("taskText").value = docSnap.data().task;
-          document.getElementById("dueDate").value = docSnap.data().dueDate;
-        } else {
-          document.getElementById("taskText").value = "";
-          document.getElementById("dueDate").value = "";
-        }
-      });
-
-      document.getElementById("closeBtn").onclick = () => overlay.style.display = "none";
-      
-      document.getElementById("saveBtn").onclick = async () => {
-        const task = document.getElementById("taskText").value;
-        const dueDate = document.getElementById("dueDate").value;
-        await setDoc(docRef, { subject, task, dueDate });
-        overlay.style.display = "none";
-      };
     
-      document.getElementById("deleteBtn").onclick = async () => {
+      // Fetch task
+      getDoc(docRef).then(docSnap => {
+        document.getElementById("taskText").value = docSnap.exists() ? docSnap.data().task : '';
+        document.getElementById("dueDate").value = docSnap.exists() ? docSnap.data().dueDate : '';
+      });
+    
+      // Remove old listeners and add new ones
+      const saveBtn = document.getElementById("saveBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+      const closeBtn = document.getElementById("closeBtn");
+    
+      saveBtn.replaceWith(saveBtn.cloneNode(true));
+      deleteBtn.replaceWith(deleteBtn.cloneNode(true));
+      closeBtn.replaceWith(closeBtn.cloneNode(true));
+    
+      document.getElementById("saveBtn").addEventListener("click", async () => {
+        await setDoc(docRef, { subject, task: document.getElementById("taskText").value, dueDate: document.getElementById("dueDate").value });
+        overlay.style.display = "none";
+      });
+    
+      document.getElementById("deleteBtn").addEventListener("click", async () => {
         await deleteDoc(docRef);
         document.getElementById("taskText").value = "";
         document.getElementById("dueDate").value = "";
         overlay.style.display = "none";
-      };
+      });
+    
+      document.getElementById("closeBtn").addEventListener("click", () => overlay.style.display = "none");
     }
     const timetableData = {
       A: [
-        ["Chinese E1", "History Z1", "History Z1", "Physics C4", "French F5"],
-        ["French F5", "English B9", "English B9", "Guidance C10", "History Z1"],
-        ["French F5", "Physical Education", "English B9", "Physical Education", "Computer Science A14"],
-        ["Chemistry C18", "Biology C6", "Mathematics C10", "Chinese E1", "Mathematics C10"],
-        ["English B9", "French F5", "Computer Science A14", "Computer Science A14", "English B9"],
-        ["Biology Z4", "Mathematics C10", "Chinese E1", "English B9", "Physics C4"]
+        ["Chinese", "History", "History", "Physics", "French"],
+        ["French", "English", "English", "Guidance", "History"],
+        ["French", "Physical Education", "English", "Physical Education", "Computer Science"],
+        ["Chemistry", "Biology", "Mathematics", "Chinese", "Mathematics"],
+        ["English", "French", "Computer Science", "Computer Science", "English"],
+        ["Biology", "Mathematics", "Chinese", "English", "Physics"]
       ],
       B: [
-        ["Physics C4", "Mathematics C10", "History Z1", "Physics Z3", "History Z1"],
-        ["English B9", "Chinese E1", "French F5", "Guidance C10", "English B9"],
-        ["Mathematics C10", "Physical Education", "Computer Science A14", "Physical Education", "Mathematics C10"],
-        ["Biology C19", "History Z1", "English B9", "English B9", "Chinese T4"],
-        ["French F5", "Mathematics C10", "Mathematics C10", "Chinese E1", "Chemistry C6"],
-        ["Computer Science A14", "Computer Science A14", "Chemistry C18", "Chemistry C18", "Biology C18"]
+        ["Physics", "Mathematics", "History", "Physics", "History"],
+        ["English", "Chinese", "French", "Guidance", "English"],
+        ["Mathematics", "Physical Education", "Computer Science", "Physical Education", "Mathematics"],
+        ["Biology", "History", "English", "English", "Chinese"],
+        ["French", "Mathematics", "Mathematics", "Chinese", "Chemistry"],
+        ["Computer Science", "Computer Science", "Chemistry", "Chemistry", "Biology"]
+      ]
+    };
+    
+    const roomData = {
+      A: [
+        ["E1", "Z1", "Z1", "C4", "F5"],
+        ["F5", "B9", "B9", "C10", "Z1"],
+        ["F5", "PE", "B9", "PE", "A14"],
+        ["C18", "C6", "C10", "E1", "C10"],
+        ["B9", "F5", "A14", "A14", "B9"],
+        ["Z4", "C10", "E1", "B9", "C4"]
+      ],
+      B: [
+        ["C4", "C10", "Z1", "Z3", "Z1"],
+        ["B9", "E1", "F5", "C10", "B9"],
+        ["C10", "PE", "A14", "PE", "C10"],
+        ["C19", "Z1", "B9", "B9", "T4"],
+        ["F5", "C10", "C10", "E1", "C6"],
+        ["A14", "A14", "C18", "C18", "C18"]
       ]
     };
     renderTimetable();
