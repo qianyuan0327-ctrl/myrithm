@@ -189,18 +189,28 @@
 
   } else {
     words.forEach(word => {
-      let isPlural = word.endsWith("us");
-      let baseWord = isPlural ? word.slice(0, -2) : word;
 
-      if (dictionary[baseWord]) {
-        let english = dictionary[baseWord].en[0];
+    word = word.replace(/[’‘]/g, "'");
+
+    let isPlural = word.endsWith("us");
+    let baseWord = isPlural ? word.slice(0, -2) : word;
+
+    let found = false;
+
+    for (let ash in dictionary) {
+      if (ash === baseWord || dictionary[ash].en.includes(baseWord)) {
+        let english = dictionary[ash].en[0];
         output.push(isPlural ? english + "s" : english);
-      } else {
-        output.push("___");
-        unknownWords.push(word);
+        found = true;
+        break;
       }
-    });
-  }
+    }
+
+    if (!found) {
+      output.push("___");
+      unknownWords.push(word);
+    }
+  });
 
   let finalText = output.join(" ");
 
