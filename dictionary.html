@@ -189,37 +189,38 @@
 
   } else {
     words.forEach(word => {
-
-    word = word.replace(/[’‘]/g, "'");
-
-    let isPlural = word.endsWith("us");
-    let baseWord = isPlural ? word.slice(0, -2) : word;
-
-    let found = false;
-
-    for (let ash in dictionary) {
-      if (ash === baseWord || dictionary[ash].en.includes(baseWord)) {
-        let english = dictionary[ash].en[0];
-        output.push(isPlural ? english + "s" : english);
-        found = true;
-        break;
+      
+      word = word.replace(/[’‘]/g, "'");
+  
+      let isPlural = word.endsWith("us");
+      let baseWord = isPlural ? word.slice(0, -2) : word;
+  
+      let found = false;
+  
+      for (let ash in dictionary) {
+        if (ash === baseWord || dictionary[ash].en.includes(baseWord)) {
+          let english = dictionary[ash].en[0];
+          output.push(isPlural ? english + "s" : english);
+          found = true;
+          break;
+        }
       }
-    }
-
-    if (!found) {
-      output.push("___");
-      unknownWords.push(word);
-    }
-  });
+  
+      if (!found) {
+        output.push("___");
+        unknownWords.push(word);      
+      }
+    });
+  }
 
   let finalText = output.join(" ");
-
+  
   if (unknownWords.length > 0) {
     finalText += "\n\nUnknown word(s): " + unknownWords.join(", ");
   }
 
   document.getElementById("result").textContent = finalText;
-}
+
 
   document.getElementById("translateBtn")
     .addEventListener("click", translateSentence);
