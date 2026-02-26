@@ -31,6 +31,30 @@
         cursor: pointer;
         transition: all 0.3s ease;
       }
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      
+      #modal {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 300px;
+        max-width: 90%;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        transform: scale(0.8);   /* start smaller for animation */
+        opacity: 0;              /* invisible initially */
+        transition: all 0.3s ease; /* smooth grow/fade animation */
+      }
     </style>
   </head>
   <body>
@@ -122,13 +146,17 @@
     }
     function openPopup(subject, rowIndex, colIndex) {
       const overlay = document.getElementById("overlay");
+      const modal = document.getElementById("modal");
+    
       overlay.style.display = "flex";
-    
+      modal.style.transform = "scale(0.8)";
+      modal.style.opacity = 0;
+      modal.offsetHeight;
+      modal.style.transform = "scale(1)";
+      modal.style.opacity = 1;
       document.getElementById("modalTitle").textContent = subject;
-    
       const docId = `${currentWeek}-${rowIndex}-${colIndex}`;
       const docRef = doc(db, "timetable", docId);
-    
       getDoc(docRef).then(docSnap => {
         if (docSnap.exists()) {
           document.getElementById("taskText").value = docSnap.data().task;
@@ -138,16 +166,13 @@
           document.getElementById("dueDate").value = "";
         }
       });
-    
       document.getElementById("closeBtn").onclick = () => overlay.style.display = "none";
-    
       document.getElementById("saveBtn").onclick = async () => {
         const task = document.getElementById("taskText").value;
         const dueDate = document.getElementById("dueDate").value;
         await setDoc(docRef, { subject, task, dueDate });
         overlay.style.display = "none";
       };
-    
       document.getElementById("deleteBtn").onclick = async () => {
         await deleteDoc(docRef);
         document.getElementById("taskText").value = "";
@@ -155,7 +180,6 @@
         overlay.style.display = "none";
       };
     }
-    
     const timetableData = {
       A: [
         ["Chinese E1", "History Z1", "History Z1", "Physics C4", "French F5"],
