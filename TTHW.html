@@ -104,6 +104,19 @@
       <span id="weekLabel">Week A</span>
     </div>
     <div id="timetable"></div>
+    <div id="overlay" style="display:none;">
+      <div id="modal" style="background:white; padding:20px; border-radius:8px; width:300px; max-width:90%;">
+        <h2 id="modalTitle"></h2>
+        <textarea id="taskText" placeholder="Task here"></textarea>
+        <label>Due:</label>
+        <input type="date" id="dueDate">
+        <div class="modal-buttons">
+          <button id="saveBtn">Save</button>
+          <button id="deleteBtn">Delete</button>
+          <button id="closeBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
     
   </body>
   
