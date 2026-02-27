@@ -9,9 +9,7 @@
       h1 { text-align: center; padding: 20px; }
       #timetable {
         display: grid;
-        /* 6 columns: 1 for period #, 5 for days */
         grid-template-columns: 50px repeat(5, 1fr); 
-        /* 7 rows: 1 for day names, 6 for periods */
         grid-template-rows: 40px repeat(6, 100px); 
         gap: 5px;
         width: 95%;
@@ -179,7 +177,6 @@
       const auth = getAuth(app);
       const db = getFirestore(app);
   
-      // Auth Logic
       document.getElementById("LoginBtn").onclick = async () => {
         const email = document.getElementById("adminEmail").value;
         const pass = document.getElementById("adminPass").value;
@@ -191,7 +188,6 @@
         document.getElementById("LogoutBtn").style.display = user ? "inline-block" : "none";
       });
   
-      // Navigation
       let currentWeek = "A";
       document.getElementById("weekA").onclick = () => { currentWeek = "A"; document.getElementById("weekLabel").textContent = "Week A"; renderTimetable(); };
       document.getElementById("weekB").onclick = () => { currentWeek = "B"; document.getElementById("weekLabel").textContent = "Week B"; renderTimetable(); };
@@ -222,7 +218,6 @@
             const room = roomData[currentWeek][rowIndex][colIndex];
             let statusEmoji = ""; 
             
-            // Fetch status from Firebase
             const docRef = doc(db, "subjects", subject.replace(/\s+/g, '_'));
             const docSnap = await getDoc(docRef);
             
