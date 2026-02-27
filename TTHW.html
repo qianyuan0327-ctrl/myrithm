@@ -227,11 +227,12 @@
             } else {
               timeEmoji = "🟢"
             }
+          }
             const room = roomData[currentWeek][rowIndex][colIndex];
             const cell = document.createElement("div");
             cell.className = "timetable-cell";
             cell.innerHTML = `
-              <strong>${subject}</strong>
+              <strong>${subject,timeEmoji}</strong>
               <small style="color: #666;">${room}</small>
             `;
             cell.onclick = () => openPopup(subject);
