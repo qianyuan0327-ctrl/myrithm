@@ -198,47 +198,54 @@
   
       
   
-      function renderTimetable() {
+      async function renderTimetable() {
         const container = document.getElementById("timetable");
         container.innerHTML = "";
-      
         const days = ["", "Mon", "Tue", "Wed", "Thu", "Fri"];
-
+      
         days.forEach(day => {
           const cell = document.createElement("div");
           cell.className = "header-cell";
           cell.textContent = day;
           container.appendChild(cell);
         });
-
-        timetableData[currentWeek].forEach((row, rowIndex) => {
-          // Add the Period Number (Left Sidebar)
+      
+        let rowIndex = 0;
+        for (const row of timetableData[currentWeek]) {
           const periodCell = document.createElement("div");
           periodCell.className = "header-cell";
           periodCell.textContent = rowIndex + 1;
           container.appendChild(periodCell);
-
-          row.forEach((subject, colIndex) => {
-            let dueTimestamp = taskObj.dueDate
-            if (dueTimestamp - Date.now() < 172800000) {
-              timeEmoji = "🔴"
-            } else if (dueTimestamp - Date.now() < 432000000) {
-              timeEmoji = "🟡"
-            } else {
-              timeEmoji = "🟢"
-            }
-          });
+      
+          let colIndex = 0;
+          for (const subject of row) {
             const room = roomData[currentWeek][rowIndex][colIndex];
+            let statusEmoji = ""; 
+            
+            // Fetch status from Firebase
+            const docRef = doc(db, "subjects", subject.replace(/\s+/g, '_'));
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists() && docSnap.data().tasks && docSnap.data().tasks.length > 0) {
+              const tasks = docSnap.data().tasks;
+              const closest = Math.min(...tasks.map(t => t.dueDate));
+              const diff = closest - Date.now();
+              
+              if (diff < 172800000) statusEmoji = "🔴 ";
+              else if (diff < 432000000) statusEmoji = "🟡 ";
+              else statusEmoji = "🟢 ";
+            }
+      
             const cell = document.createElement("div");
             cell.className = "timetable-cell";
-            cell.innerHTML = `
-              <strong>${subject,timeEmoji}</strong>
-              <small style="color: #666;">${room}</small>
-            `;
+            cell.innerHTML = `<strong>${statusEmoji}${subject}</strong><small style="color: #666;">${room}</small>`;
             cell.onclick = () => openPopup(subject);
             container.appendChild(cell);
-          });
+            colIndex++;
+          }
+          rowIndex++;
         }
+      }
   
       async function openPopup(subject) {
         const overlay = document.getElementById("overlay");
