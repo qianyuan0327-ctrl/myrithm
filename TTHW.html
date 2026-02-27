@@ -219,6 +219,14 @@
           container.appendChild(periodCell);
 
           row.forEach((subject, colIndex) => {
+            let dueTimestamp = taskObj.dueDate
+            if (dueTimestamp - Date.now() < 172800000) {
+              timeEmoji = "🔴"
+            } else if (dueTimestamp - Date.now() < 432000000) {
+              timeEmoji = "🟡"
+            } else {
+              timeEmoji = "🟢"
+            }
             const room = roomData[currentWeek][rowIndex][colIndex];
             const cell = document.createElement("div");
             cell.className = "timetable-cell";
@@ -242,7 +250,7 @@
         taskList.innerHTML = "Loading tasks...";
 
         const docRef = doc(db, "subjects", subject.replace(/\s+/g, '_'));
-  
+        
         const loadTasks = async () => {
           const docSnap = await getDoc(docRef);
           taskList.innerHTML = "";
@@ -272,10 +280,11 @@
         saveBtn.replaceWith(saveBtn.cloneNode(true));
         document.getElementById("saveBtn").onclick = async () => {
           const task = document.getElementById("taskText").value;
-          const date = document.getElementById("dueDate").value;
+          const date = document.getElementById("dueDate").value + "T01:00:00";
+          const dueDate = Date.parse(date)
           if(!task) return alert("Enter a task");
   
-          const newTask = { task, date, id: Date.now() };
+          const newTask = { task, date, id: Date.now(), dueDate };
           
           const docSnap = await getDoc(docRef);
           if (!docSnap.exists()) {
